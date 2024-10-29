@@ -21,33 +21,29 @@ func _process(delta: float) -> void:
 	
 	var target_position : Vector3 = target.global_position
 	var camera_position : Vector3 = global_position
-	# Keep camera moving
-	global_position += autoscroll_speed
-	var camera_left : float = top_left.x
-	var camera_top : float = top_left.y
-	var camera_right : float = bottom_right.x
-	var camera_bottom : float = bottom_right.y
 	
-	if target.global_position.x < camera_left:
-		target.global_position.x = camera_left
-	'''
-	#left
-	var diff_between_left_edges = (target_position.x - target.WIDTH / 2.0) - (camera_position.x - box_width / 2.0)
-	if diff_between_left_edges < 0:
-		global_position.x += diff_between_left_edges
-	#right
-	var diff_between_right_edges = (target_position.x + target.WIDTH / 2.0) - (camera_position.x + box_width / 2.0)
-	if diff_between_right_edges > 0:
-		global_position.x += diff_between_right_edges
-	#top
-	var diff_between_top_edges = (target_position.z - target.HEIGHT / 2.0) - (camera_position.z - box_height / 2.0)
-	if diff_between_top_edges < 0:
-		global_position.z += diff_between_top_edges
-	#bottom
-	var diff_between_bottom_edges = (target_position.z + target.HEIGHT / 2.0) - (camera_position.z + box_height / 2.0)
-	if diff_between_bottom_edges > 0:
-		global_position.z += diff_between_bottom_edges
-	'''
+	# Autoscroll camera
+	global_position += autoscroll_speed
+	
+	# Keep container box moving with camera
+	var container_left : float = global_position.x + top_left.x
+	var container_top : float = global_position.z + top_left.y
+	var container_right : float = global_position.x + bottom_right.x
+	var container_bottom : float = global_position.z + bottom_right.y
+	
+	# Keep target inside container box
+	if target.position.x < container_left:
+		target.position.x = container_left
+
+	if target.position.x > container_right:
+		target.position.x = container_right
+		
+	if target.position.z > container_top:
+		target.position.z = container_top
+		
+	if target.position.z < container_bottom:
+		target.position.z = container_bottom
+
 	super(delta)
 	
 func draw_logic() -> void:
