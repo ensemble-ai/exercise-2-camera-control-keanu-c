@@ -1,9 +1,9 @@
 class_name PositionLockLerpCamera
 extends CameraControllerBase
 
-@export var follow_speed : float = target.BASE_SPEED - 5.0
-@export var catchup_speed : float = target.BASE_SPEED - 2.0
-@export var leash_distance : float = 5.0
+@export var follow_speed : float = target.BASE_SPEED * 0.85
+@export var catchup_speed : float = target.BASE_SPEED * 0.95
+@export var leash_distance : float = 10.0
 
 func _ready() -> void:
 	super()
