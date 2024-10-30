@@ -1,9 +1,9 @@
 class_name PositionLockLerpCamera
 extends CameraControllerBase
 
-@export var follow_speed : float = 1.0
-@export var catchup_speed : float = 1.0
-@export var leash_distance : float = 1.0
+@export var follow_speed : float = target.BASE_SPEED - 5.0
+@export var catchup_speed : float = target.BASE_SPEED - 2.0
+@export var leash_distance : float = 5.0
 
 func _ready() -> void:
 	super()
@@ -16,10 +16,24 @@ func _process(delta: float) -> void:
 	# Show camera
 	if draw_camera_logic:
 		draw_logic()
-	
+		
 	var target_position : Vector3 = target.global_position
 	var camera_position : Vector3 = global_position
-
+	var distance_camera_to_target : float = target_position.distance_to(camera_position)
+	var direction : Vector3 = (target_position - camera_position).normalized()
+	
+	# Follow when target is moving
+	if target.velocity:
+		camera_position += direction * follow_speed * delta
+	# Catch up when target is not moving
+	else:
+		camera_position += direction * catchup_speed * delta
+	# Don't let the target get further from leash_distance
+	if distance_camera_to_target > leash_distance:
+		camera_position += direction * target.BASE_SPEED * delta
+		
+	global_position = camera_position
+	
 	super(delta)
 	
 func draw_logic() -> void:
@@ -45,8 +59,8 @@ func draw_logic() -> void:
 	
 	add_child(mesh_instance)
 	mesh_instance.global_transform = Transform3D.IDENTITY
-	mesh_instance.global_position = Vector3(global_position.x, target.global_position.y, global_position.z)
-	
+	# Follow the camera
+	mesh_instance.global_position = global_position
 	#mesh is freed after one update of _process
 	await get_tree().process_frame
 	mesh_instance.queue_free()
