@@ -23,6 +23,9 @@ func _process(delta: float) -> void:
 	var distance_camera_to_target : float = target_position.distance_to(camera_position)
 	var direction : Vector3 = (target_position - camera_position).normalized()
 	
+	if target.velocity:
+		pass
+	
 	super(delta)
 	
 func draw_logic() -> void:

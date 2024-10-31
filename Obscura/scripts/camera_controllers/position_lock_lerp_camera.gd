@@ -3,7 +3,7 @@ extends CameraControllerBase
 
 @export var follow_speed : float = target.BASE_SPEED * 0.85
 @export var catchup_speed : float = target.BASE_SPEED * 0.95
-@export var leash_distance : float = 10.0
+@export var leash_distance : float = 20.0
 
 func _ready() -> void:
 	super()
@@ -30,7 +30,9 @@ func _process(delta: float) -> void:
 		camera_position += direction * catchup_speed * delta
 	# Don't let the target get further from leash_distance
 	if distance_camera_to_target > leash_distance:
-		camera_position += direction * target.BASE_SPEED * delta
+		# move camera to keep leash distance
+		camera_position = target_position - direction * leash_distance
+		
 		
 	global_position = camera_position
 	
@@ -60,7 +62,7 @@ func draw_logic() -> void:
 	add_child(mesh_instance)
 	mesh_instance.global_transform = Transform3D.IDENTITY
 	# Follow the camera
-	mesh_instance.global_position = global_position
+	mesh_instance.global_position = Vector3(global_position.x, target.global_position.y, global_position.z)
 	#mesh is freed after one update of _process
 	await get_tree().process_frame
 	mesh_instance.queue_free()
