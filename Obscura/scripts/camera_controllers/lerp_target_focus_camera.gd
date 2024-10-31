@@ -1,10 +1,12 @@
 class_name LerpTargetFocusCamera
 extends CameraControllerBase
 
-@export var lead_speed : float = target.BASE_SPEED * 0.85
-@export var catchup_delay_duration : float = target.BASE_SPEED * 0.95
-@export var catchup_speed: float = target.BASE_SPEED * 0.95
+@export var lead_speed : float = target.BASE_SPEED * 0.5
+@export var catchup_delay_duration : float = 0.5
+@export var catchup_speed: float = target.BASE_SPEED * 0.1
 @export var leash_distance : float = 10.0
+# Declare timer here, so it retains its value across frames
+var timer : float = 0.0
 
 func _ready() -> void:
 	super()
@@ -19,12 +21,22 @@ func _process(delta: float) -> void:
 		draw_logic()
 		
 	var target_position : Vector3 = target.global_position
+	var target_velocity_direction = target.velocity.normalized()
 	var camera_position : Vector3 = global_position
 	var distance_camera_to_target : float = target_position.distance_to(camera_position)
-	var direction : Vector3 = (target_position - camera_position).normalized()
-	
+	# Use lerp(), since I didn't use it previously
+	# Target moving
 	if target.velocity:
-		pass
+		timer = 0.0
+		var camera_lead: Vector3 = target_position + target_velocity_direction * leash_distance
+		camera_position = camera_position.lerp(camera_lead, lead_speed * delta)
+	# Target not moving
+	else:
+		timer += delta
+		if timer >= catchup_delay_duration:
+			camera_position = camera_position.lerp(target_position, catchup_speed * delta)
+	
+	global_position = camera_position
 	
 	super(delta)
 	
@@ -52,7 +64,7 @@ func draw_logic() -> void:
 	add_child(mesh_instance)
 	mesh_instance.global_transform = Transform3D.IDENTITY
 	# Follow the camera
-	mesh_instance.global_position = global_position
+	mesh_instance.global_position = Vector3(global_position.x, target.global_position.y, global_position.z)
 	#mesh is freed after one update of _process
 	await get_tree().process_frame
 	mesh_instance.queue_free()

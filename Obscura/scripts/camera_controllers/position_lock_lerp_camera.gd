@@ -33,7 +33,6 @@ func _process(delta: float) -> void:
 		# move camera to keep leash distance
 		camera_position = target_position - direction * leash_distance
 		
-		
 	global_position = camera_position
 	
 	super(delta)
