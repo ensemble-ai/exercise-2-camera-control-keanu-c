@@ -11,6 +11,7 @@ var timer : float = 0.0
 func _ready() -> void:
 	super()
 	position = target.position
+	draw_camera_logic = true
 	
 func _process(delta: float) -> void:
 	if !current:

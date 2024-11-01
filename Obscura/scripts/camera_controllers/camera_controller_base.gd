@@ -15,8 +15,7 @@ extends Camera3D
 
 func _ready() -> void:
 	current = false
-	position += Vector3(0.0, dist_above_target, 0.0) 
-
+	position += Vector3(0.0, dist_above_target, 0.0)
 
 func _process(delta: float) -> void:
 	if Input.is_action_just_pressed("fire1"):
