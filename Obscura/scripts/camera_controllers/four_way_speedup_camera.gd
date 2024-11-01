@@ -1,9 +1,9 @@
 class_name FourWaySpeedupCamera
 extends CameraControllerBase
 
-@export var push_ratio : float = 0.0
-@export var pushbox_top_left : Vector2 = Vector2(-7,7)
-@export var pushbox_bottom_right : Vector2 = Vector2(7,-7)
+@export var push_ratio : float = target.BASE_SPEED * 0.5
+@export var pushbox_top_left : Vector2 = Vector2(-8,8)
+@export var pushbox_bottom_right : Vector2 = Vector2(8,-8)
 @export var speedup_zone_top_left : Vector2 = Vector2(-5,5)
 @export var speedup_zone_bottom_right : Vector2 = Vector2(5,-5)
 
@@ -21,13 +21,39 @@ func _process(delta: float) -> void:
 	
 	var target_position : Vector3 = target.global_position
 	var camera_position : Vector3 = global_position
+	var box_width : float = pushbox_bottom_right.x - pushbox_top_left.x
+	var box_height : float = pushbox_top_left.y - pushbox_bottom_right.y
 	# pushbox
 	#left
-	var diff_between_left_edges = (target_position.x - target.WIDTH / 2.0) - (camera_position.x - pushbox_top_left.x / 2.0)
+	var diff_between_left_edges = (target_position.x - target.WIDTH / 2.0) - (camera_position.x - box_width / 2.0)
 	if diff_between_left_edges < 0:
-		global_position.x += diff_between_left_edges
-	# speedup zone
-	
+		camera_position.x += diff_between_left_edges
+	#right
+	var diff_between_right_edges = (target_position.x + target.WIDTH / 2.0) - (camera_position.x + box_width / 2.0)
+	if diff_between_right_edges > 0:
+		camera_position.x += diff_between_right_edges
+	#top
+	var diff_between_top_edges = (target_position.z - target.HEIGHT / 2.0) - (camera_position.z - box_height / 2.0)
+	if diff_between_top_edges < 0:
+		camera_position.z += diff_between_top_edges
+	#bottom
+	var diff_between_bottom_edges = (target_position.z + target.HEIGHT / 2.0) - (camera_position.z + box_height / 2.0)
+	if diff_between_bottom_edges > 0:
+		camera_position.z += diff_between_bottom_edges
+		
+	# speedup zone boundary
+	var speedup_zone_left : float = global_position.x + speedup_zone_top_left.x
+	var speedup_zone_top : float = global_position.z + speedup_zone_top_left.y
+	var speedup_zone_right : float = global_position.x + speedup_zone_bottom_right.x
+	var speedup_zone_bottom : float = global_position.z + speedup_zone_bottom_right.y
+	var direction : Vector3 = (target_position - camera_position).normalized()
+	# check if target is in speedup zone
+	if (target_position.x < speedup_zone_left 
+	or target_position.z > speedup_zone_top
+	or target_position.x > speedup_zone_right
+	or target_position.z < speedup_zone_bottom):
+		# follow player until out of speedup zone
+		camera_position += direction * push_ratio * delta
 		
 	# Keep container box moving with camera
 	var pushbox_container_left : float = global_position.x + pushbox_top_left.x
@@ -47,6 +73,8 @@ func _process(delta: float) -> void:
 		
 	if target.position.z < pushbox_container_bottom:
 		target.position.z = pushbox_container_bottom
+		
+	global_position = camera_position
 
 	super(delta)
 	
